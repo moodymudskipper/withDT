@@ -1,9 +1,9 @@
 Package: withDT
-Title: What the Package Does (one line, title case)
+Title: Use data.table Syntax For One Call
 Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-Depends: R (>= 3.6.0)
+Authors@R: person("Antoine", "Fabri", email = "antoine.fabri@gmail.com", role = c("aut", "cre"))
+Description: A single function package to run data.table code without verbose conversions.
+Depends: R (>= 3.1.0)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
