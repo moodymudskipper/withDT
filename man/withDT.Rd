@@ -2,7 +2,7 @@
 % Please edit documentation in R/withDT.R
 \name{withDT}
 \alias{withDT}
-\title{Use data table syntax for one call}
+\title{Use data.table syntax for one call}
 \usage{
 withDT(expr, lock = getOption("withDT.lock"))
 }
@@ -14,7 +14,7 @@ withDT(expr, lock = getOption("withDT.lock"))
 by reference is forbidden.}
 }
 \description{
-Use data table syntax for one call
+Use data.table syntax for one call
 }
 \details{
 An important particularity of \code{withDT()} is that assignments are never done by
