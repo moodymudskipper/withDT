@@ -1,4 +1,4 @@
-#' Use data table syntax for one call
+#' Use data.table syntax for one call
 #'
 #' @details
 #' An important particularity of `withDT()` is that assignments are never done by
