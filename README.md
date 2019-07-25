@@ -3,7 +3,20 @@
 withDT
 ======
 
-`withDT()` is called to use *data.table* syntax for one call.
+*withDT* features 2 functions, `withDT()` and `` %DT>%`() `` which make *data.table* syntax available for single calls without further class or attribute housekeeping.
+
+-   `withDT()` is called to use *data.table* syntax for one call.
+-   `%DT>%` is a pipe that allows to insert *data.table* calls in *magrittr* pipe chains.
+
+Some benefits are :
+
+-   Leverage compact *data.table* syntax, and speed to a degree
+-   Clearly isolate *data.table* code to avoid confusion due to hybrid syntax
+-   Be sure that no `data.table` object is created in calling environment, avoiding potential confusion
+-   Keep the class of `x` (regular data frame, tibble or other), with some exceptions detailed below
+-   *data.table* is not attached so there is no risk of masking functions from other packages such as *lubridate* (11 conflicting functions), *dplyr* (4 conflicting functions) or *purrr* (1 conflicting function)
+
+We believe this package can help integrating some powerful *data.table* features in any workflow with minimal confusion.
 
 Installation
 ------------
@@ -18,10 +31,14 @@ devtools::install_github("moodymudskipper/withDT")
 Assignments by reference
 ------------------------
 
-An important particularity of `withDT()` is that assignments are never done by reference. Though limiting it avoids the confusion and unintended behaviors that might come with them. The syntax of these assignments is still supported but will return a copy. In order to fail explicitly whenever that syntax is used, the argument `lock` can be set to `TRUE`.
+An important particularity of `withDT()` is that assignments are never done by reference. Though limiting it avoids the confusion and unintended behaviors that might come with them.
+
+The syntax of these assignments is still supported but will return a copy. In order to fail explicitly whenever that syntax is used, the argument `lock` can be set to `TRUE` the `withDT.lock` option can be set with `options(withDT.lock = TRUE)`.
 
 Examples
 --------
+
+### `withDT()`
 
 ``` r
 library(withDT)
@@ -63,19 +80,41 @@ names(iris)
 To trigger an error when this syntax is used we can set `lock` to `TRUE`.
 
 ``` r
-try(iris4 <- withDT(lock=TRUE,iris[, .(meanSW = mean(Sepal.Width)), by = Species][,b:=3]))
-#> Error in `[.data.table`(x, ...) : 
-#>   .SD is locked. Using := in .SD's j is reserved for possible future use; a tortuously flexible way to modify by group. Use := in j directly to modify by group by reference.
+iris4 <- withDT(lock=TRUE,iris[, .(meanSW = mean(Sepal.Width)), by = Species][,b:=3])
+#> Error in value[[3L]](cond): Syntax of assignment by reference is forbidden when `lock` is TRUE
 ```
 
-Other benefits
---------------
+### `%DT>%`
 
--   Leverage compact *data.table* syntax, and speed to a degree
--   Clearly isolate *data.table* code to avoid confusion due to hybrid syntax
--   Be sure that no `data.table` object is created in calling environment, avoiding potential confusion
--   Keep the class of `x` (regular data frame, tibble or other), with some exceptions detailed below
--   *data.table* is not attached so there is no risk of masking functions from other packages such as *lubridate* (11 conflicting functions), *dplyr* (4 conflicting functions) or *purrr* (1 conflicting function)
+The `%DT>%` pipe is another way to use *data.table*'s power and syntax. It can in fact be more efficient than `withDT()`.
+
+It can be used on simple calls :
+
+``` r
+iris %DT>% .[, .(meanSW = mean(Sepal.Width)), by = Species]
+#>      Species meanSW
+#> 1     setosa  3.428
+#> 2 versicolor  2.770
+#> 3  virginica  2.974
+```
+
+Or be used as part of a pipe chain using *magrittr* 's operator `%>%`, for example we can mix *data.table* and *tidyverse* operations by doing:
+
+``` r
+library(tibble)
+library(dplyr, warn.conflicts = FALSE)
+#> Warning: package 'dplyr' was built under R version 3.6.1
+iris %>%
+  as_tibble() %DT>%
+  .[, .(meanSW = mean(Sepal.Width)), by = Species][
+    ,Species := as.character(Species)] %>%
+  filter(startsWith(Species,"v"))
+#> # A tibble: 2 x 2
+#>   Species    meanSW
+#>   <chr>       <dbl>
+#> 1 versicolor   2.77
+#> 2 virginica    2.97
+```
 
 Some caveats
 ------------
