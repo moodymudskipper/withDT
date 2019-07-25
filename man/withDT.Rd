@@ -19,16 +19,17 @@ Use data.table syntax for one call
 \details{
 An important particularity of \code{withDT()} is that assignments are never done by
 reference. Though limiting it avoids the confusion and unintended behaviors
-that might come with them. The syntax of these assignment is still supported
-but will return a copy. In order to fail whenever that syntax is used,
+that might come with them. The syntax of these assignments is still supported
+but will return a copy. In order to fail explicitly whenever that syntax is used, the
+argument \code{lock} can be set to \code{TRUE}.
 
 Other benefits of this function are :
 \itemize{
-\item Leverage compact data.table syntax, and speed to a degree
-\item Clearly isolate data.table code to avoid confusion due to hybrid syntax
-\item Be sure that no data.table is created in calling environment, avoiding
-potential confusion.
-\item keep the class of \code{x} (regular data frame, tibble or other), with some
+\item Leverage compact \emph{data.table} syntax, and speed to a degree
+\item Clearly isolate \emph{data.table} code to avoid confusion due to hybrid syntax
+\item Be sure that no \code{data.table} object is created in calling environment, avoiding
+potential confusion
+\item Keep the class of \code{x} (regular data frame, tibble or other), with some
 exceptions detailed below
 }
 
@@ -36,14 +37,19 @@ Some caveats are:
 \itemize{
 \item Copies are created for every call of \code{[}, which might be costly in some
 cases, if optimization is the goal we suggest using \code{data.table::setDT()}
-followed by idiomatic data.table syntax.
-\item attributes other than class are stripped
-\item classes \code{grouped_df} and \code{rowwise_df}, created respectively
-by \code{dplyr::group_by()} and \code{dplyr::rowwise()} are stripped.
+followed by idiomatic \emph{data.table} syntax
+\item Attributes other than class are stripped
+\item Classes \code{grouped_df} and \code{rowwise_df}, created respectively
+by \code{dplyr::group_by()} and \code{dplyr::rowwise()} are stripped
 \item When using syntax of assignment by reference and \code{lock} is \code{FALSE} (default),
-some expressions won't be equivalent to the data.table code, see examples.
+some expressions won't be equivalent to the data.table code, see examples
 However we think in these cases the behavior of \code{withDT()} is more likely
 to be expected
+}
+\itemize{
+\item \emph{data.table} is not attached so there is no risk of masking functions from
+other packages such as \emph{lubridate} (11 conflicting functions),
+\emph{dplyr} (4 conflicting functions) or \emph{purrr} (1 conflicting function)
 }
 }
 \examples{

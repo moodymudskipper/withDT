@@ -51,29 +51,17 @@
 #' # but wouldn't work with lock == TRUE
 #' try(iris4 <- withDT(lock=TRUE,iris[, .(meanSW = mean(Sepal.Width)), by = Species][,b:=3]))
 withDT <- function(expr, lock = getOption("withDT.lock")){
-  dt_brackets <- list(
-    `[` = function(x, ...) {
-      if(data.table::is.data.table(x) || !inherits(x, "data.frame")) {
-        # if x is a data.table OR nor a data frame it should be executed normally
-        x[...]
-      } else {
-        # save initial class, except for special classes that will be stripped
-        class_ <- setdiff(class(x), c("grouped_df", "rowwise_df"))
-        # make a copy to preserve input from modifications by reference
-        x <- data.table::as.data.table(x)
-        # if lock is TRUE syntax of assignment by reference will trigger custom error
-        # else data.table call is executed
-        if(lock) attr(x, ".data.table.locked") <- TRUE
-        tryCatch(x <- x[...], error = function(e){
-          if(grepl("\\.SD is locked",e)) stop("Syntax of assignment by reference is forbidden when `lock` is TRUE")
-          else stop(e)
-        })
-        # strip of data.table attributes and set back to initial class
-        if(lock) attr(x, ".data.table.locked") <- NULL
-        attr(x, ".internal.selfref") <- NULL
-        class(x) <- class_
-        x
-      }
-    })
-  eval(substitute(expr), dt_brackets)
+  eval(substitute(expr), list(`[` = get("dt_bracket", asNamespace("withDT"))))
+}
+
+dt_bracket <- function(x, ...) {
+  if(data.table::is.data.table(x) || !inherits(x, "data.frame")) {
+    # if x is a data.table OR nor a data frame it should be executed normally
+    x[...]
+  } else {
+    class_ <- backup_class(x)
+    res <- evalDT(substitute(.[...]), dot = x, lock = get("lock",parent.frame()))
+    restore_attr(res, class_)
+    res
+  }
 }
